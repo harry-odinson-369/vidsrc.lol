@@ -55,7 +55,7 @@ sdk.socket({
 
     },
     onListening() {
-        console.log("Socket listening on port " + PORT + "...");
+        console.log("Socket listening on " + `${sdk.HOST}:${sdk.PORT}` + "...");
     },
     onConnection(ws, message) {
         console.log(`A new client has connected! Ip Address => ${message.socket.remoteAddress}`);
