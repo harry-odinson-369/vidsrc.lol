@@ -1,0 +1,26 @@
+{
+  "name": "vidsrc.lol",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "harry-odinson",
+  "main": "./index.js",
+  "scripts": {
+    "test": "tsc --build && node ./dist/test.js",
+    "dev": "tsc --build && nodemon ./src/index.ts",
+    "start": "tsc --build && node ./dist/index.js",
+    "build": "tsc --build"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@types/hls-parser": "^0.8.7",
+    "axios": "^1.8.4",
+    "hls-parser": "^0.13.5",
+    "merlmovie-sdk": "^0.0.6",
+    "puppeteer-real-browser": "^1.4.2"
+  }
+}
