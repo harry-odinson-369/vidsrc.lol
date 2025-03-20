@@ -460,6 +460,7 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
         if (formatted_links) {
             progress(100);
+            await new Promise(resolve => setTimeout(resolve, 2000));
             const formatted_subs = get_formatted_subs(resp0.data);
             return {
                 qualities: formatted_links,

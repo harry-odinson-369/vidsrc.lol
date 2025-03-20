@@ -110,6 +110,7 @@ export default async function get_direck_links(id: string, request: FetchFunctio
                 });
 
                 progress(100);
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 return data;
             }
         }

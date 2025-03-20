@@ -79,6 +79,8 @@ export async function get_movie_direct_links(id: string, request: FetchFunction,
 
             progress(100);
 
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             return {
                 qualities: links,
                 subtitles: subs,
@@ -141,6 +143,8 @@ export async function get_tv_direct_links(id: string, season: string, episode: s
             }
 
             progress(100);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             return {
                 qualities: links,
