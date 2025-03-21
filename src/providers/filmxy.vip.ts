@@ -460,7 +460,7 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
         if (formatted_links) {
             progress(100);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            
             const formatted_subs = get_formatted_subs(resp0.data);
             return {
                 qualities: formatted_links,
@@ -473,23 +473,24 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 export async function try_get_direct_links(params: {
     auth?: AuthenticationModel,
     id: any,
+    progress: ProgressFunction,
     season?: any,
     episode?: any,
     onAuthUpdate?: (generated: { auth: AuthenticationModel, filename: string }) => void,
     onError?: (err: any) => void,
-}, progress: ProgressFunction): Promise<DirectLink | undefined> {
+}): Promise<DirectLink | undefined> {
 
     if (params.auth) {
-        progress(20);
-        const resp = await get_direct_links(params.auth, params.id, progress, params.season, params.episode);
+        params.progress(20);
+        const resp = await get_direct_links(params.auth, params.id, params.progress, params.season, params.episode);
         if (resp) return resp;
     }
 
-    const generated_auth = await generate_auth(progress);
+    const generated_auth = await generate_auth(params.progress);
 
     if (generated_auth.auth) {
         if (params.onAuthUpdate) params.onAuthUpdate(generated_auth);
-        const result = await get_direct_links(generated_auth.auth, params.id, progress, params.season, params.episode);
+        const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode);
         return result;
     }
 }

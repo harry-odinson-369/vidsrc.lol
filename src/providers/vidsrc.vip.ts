@@ -36,9 +36,11 @@ export async function get_movie_direct_links(id: string, request: FetchFunction,
 
     progress(20);
 
-    const resp = await request(target, "get", {
+    const headers = {
         "referer": BASE_URL(),
-    });
+    };
+
+    const resp = await request({ url: target, headers: headers });
 
     if (resp.status === 200) {
         progress(50);
@@ -63,9 +65,9 @@ export async function get_movie_direct_links(id: string, request: FetchFunction,
 
         if (links.length) {
             progress(70);
-            const resp0 = await request(`https://vid3c.site/s.php?id=${id}`, "get", {
-                "referer": BASE_URL(),
-            });
+
+            const next_url = `https://vid3c.site/s.php?id=${id}`;
+            const resp0 = await request({ url: next_url, headers: headers });
             let subs = [];
 
             if (resp0.status === 200) {
@@ -78,8 +80,6 @@ export async function get_movie_direct_links(id: string, request: FetchFunction,
             }
 
             progress(100);
-
-            await new Promise(resolve => setTimeout(resolve, 2000));
 
             return {
                 qualities: links,
@@ -100,9 +100,11 @@ export async function get_tv_direct_links(id: string, season: string, episode: s
 
     progress(20);
 
-    const resp = await request(target, "get", {
+    const headers = {
         "referer": BASE_URL(),
-    });
+    }
+
+    const resp = await request({ url: target, headers: headers });
 
     if (resp.status === 200) {
         progress(50);
@@ -127,9 +129,9 @@ export async function get_tv_direct_links(id: string, season: string, episode: s
 
         if (links.length) {
             progress(70);
-            const resp0 = await request(`https://vid3c.site/st.php?id=${id}&s=${season}&e=${episode}`, "get", {
-                "referer": BASE_URL(),
-            });
+            
+            const next_url = `https://vid3c.site/st.php?id=${id}&s=${season}&e=${episode}`;
+            const resp0 = await request({ url: next_url, headers: headers });
 
             let subs = [];
 
@@ -143,8 +145,6 @@ export async function get_tv_direct_links(id: string, season: string, episode: s
             }
 
             progress(100);
-
-            await new Promise(resolve => setTimeout(resolve, 2000));
 
             return {
                 qualities: links,

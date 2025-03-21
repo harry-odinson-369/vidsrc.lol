@@ -49,7 +49,7 @@ export default async function get_direck_links(id: string, request: FetchFunctio
 
     progress(20);
 
-    const resp = await request(target, "get", headers);
+    const resp = await request({ url: target, headers: headers });
 
     if (resp.status === 200) {
         progress(50);
@@ -62,7 +62,7 @@ export default async function get_direck_links(id: string, request: FetchFunctio
                 return new Promise(async resolve => {
 
                     const next_url = BASE_URL(`api/e/${s.hash}`);
-                    const resp0 = await request(next_url, "get", headers);
+                    const resp0 = await request({ url: next_url, headers: headers });
 
                     if (resp0.status === 200 && typeof resp0.data === "object") {
                         progress((50 + (40 / servers.length)));
@@ -110,7 +110,7 @@ export default async function get_direck_links(id: string, request: FetchFunctio
                 });
 
                 progress(100);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                
                 return data;
             }
         }
