@@ -8,7 +8,7 @@ import vidsrc_me from "./providers/vidsrc.me";
 const PORT: number = (process.env.PORT || 8080) as number;
 const HOST: string | undefined = process.env.HOST;
 
-const sdk = new MerlMovieSDK({ HOST: "192.168.100.9", PORT: PORT });
+const sdk = new MerlMovieSDK({ HOST: HOST, PORT: PORT });
 
 function getFullUrl(path: string) {
     return new URL(`http://${HOST || `localhost:${PORT}`}${path}`);
@@ -29,9 +29,10 @@ sdk.handle({
         let result: DirectLink | undefined;
 
         const provider = url.searchParams.get("provider") ?? ProviderSite.Filmxy_Vip;
+        const isLog = url.searchParams.get("log") === "true";
 
         if (provider === ProviderSite.Filmxy_Vip) {
-            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode, onAuthUpdate(generated) { save_auth(generated.auth, generated.filename); } });
+            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode, onAuthUpdate(generated) { save_auth(generated.auth, generated.filename); }, log: isLog });
         } else if (provider === ProviderSite.Vidsrc_Vip) {
             result = await vidsrc_vip(data.mediaId, controller.fetch, controller.progress, data.season, data.episode);
         } else if (provider === ProviderSite.Embed_Su) {

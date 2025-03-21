@@ -380,7 +380,7 @@ export function unused_auth_filename() {
     return "10";
 }
 
-export async function generate_auth(progress: ProgressFunction, params?: { onError?: (msg: any) => void }): Promise<{ auth: AuthenticationModel | undefined, filename: string }> {
+export async function generate_auth(progress: ProgressFunction, params?: { log?: boolean, onError?: (msg: any) => void }): Promise<{ auth: AuthenticationModel | undefined, filename: string }> {
     const index = random(1, 10);
     const _filename = `${index}.json`;
     const _dir = path.join(__auth_dir, _filename);
@@ -410,7 +410,17 @@ export async function generate_auth(progress: ProgressFunction, params?: { onErr
 
 }
 
-export async function get_direct_links(auth: AuthenticationModel, id: any, progress: ProgressFunction, season?: any, episode?: any): Promise<DirectLink | undefined> {
+function __logData(name: string, data: string) {
+    return new Promise(resolve => {
+        const __dir = path.join(process.cwd(), "logs");
+        if (!fs.existsSync(__dir)) fs.mkdirSync(__dir, { recursive: true });
+        fs.writeFile(path.join(__dir, name), data, (err) => {
+            resolve(undefined);
+        });
+    });
+}
+
+export async function get_direct_links(auth: AuthenticationModel, id: any, progress: ProgressFunction, season?: any, episode?: any, log?: boolean): Promise<DirectLink | undefined> {
 
     let s = season;
     let e = episode;
@@ -443,6 +453,8 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
     progress(30);
 
     const resp = await request.client.get(url);
+
+    if (log === true) __logData("filmxy.html", resp.data);
     
     const c_poster = get_c_poster(resp.data);
 
@@ -455,6 +467,8 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
         const next_url = BASE_URL(`e/${id}${s && e ? `/${s}/${e}` : ""}/alpha/?nonce=${nonce}&c_poster=${c_poster}`);
 
         const resp0 = await request.client.get(next_url);
+
+        if (log === true) __logData("filmxy.html", resp0.data);
 
         const formatted_links = get_formatted_links(resp0.data);
 
@@ -478,11 +492,12 @@ export async function try_get_direct_links(params: {
     episode?: any,
     onAuthUpdate?: (generated: { auth: AuthenticationModel, filename: string }) => void,
     onError?: (err: any) => void,
+    log?: boolean,
 }): Promise<DirectLink | undefined> {
 
     if (params.auth) {
         params.progress(20);
-        const resp = await get_direct_links(params.auth, params.id, params.progress, params.season, params.episode);
+        const resp = await get_direct_links(params.auth, params.id, params.progress, params.season, params.episode, params.log);
         if (resp) return resp;
     }
 
@@ -490,7 +505,7 @@ export async function try_get_direct_links(params: {
 
     if (generated_auth.auth) {
         if (params.onAuthUpdate) params.onAuthUpdate(generated_auth);
-        const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode);
+        const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode, params.log);
         return result;
     }
 }

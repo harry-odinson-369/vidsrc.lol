@@ -15,7 +15,7 @@ async function save(filename: string, res: Response) {
 }
 
 (async () => {
-    const result = await sendTest("ws://93.127.128.47:8080?provider=filmxy.vip", {
+    const result = await sendTest("ws://localhost:8080?provider=filmxy.vip&log=true", {
         mediaId: "tt1190634",
         season: "1",
         episode: "1",
