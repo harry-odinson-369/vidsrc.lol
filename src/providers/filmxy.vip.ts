@@ -472,7 +472,7 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
         const formatted_links = get_formatted_links(resp0.data);
 
-        if (formatted_links.length) {
+        if (formatted_links && formatted_links.length) {
             progress(100);
 
             const formatted_subs = get_formatted_subs(resp0.data);

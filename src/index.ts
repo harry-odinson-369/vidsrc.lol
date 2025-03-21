@@ -49,10 +49,10 @@ sdk.handle({
 
         if (result) {
             controller.finish(result);
-            console.log(`Successfully sent data to client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
+            console.log(`=> ✅ Done client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
         } else {
             controller.failed();
-            console.log(`Failed to send data to client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
+            console.log(`=> ❌ Failed client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
         }
 
     },
