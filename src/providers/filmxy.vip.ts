@@ -334,14 +334,19 @@ export function list_auth_files(): Array<string> {
 
 export function save_auth(auth: AuthenticationModel, filename?: string) {
     return new Promise(resolve => {
-        const ls = list_auth_files();
+        try {
+            const ls = list_auth_files();
 
-        let __filename: string = filename || (ls.length ? `${ls.length + 1}.json` : "1.json");
+            let __filename: string = filename || (ls.length ? `${ls.length + 1}.json` : "1.json");
 
-        fs.writeFile(path.join(__auth_dir, __filename), JSON.stringify(auth), (err) => {
-            if (err) console.error(err);
-            resolve(undefined); 
-        });
+            fs.writeFile(path.join(__auth_dir, __filename), JSON.stringify(auth), (err) => {
+                if (err) console.error(err);
+                resolve(undefined);
+            });
+        } catch (err) {
+            console.error(err);
+            resolve(undefined);
+        }
     });
 }
 
