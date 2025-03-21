@@ -47,12 +47,14 @@ sdk.handle({
             result = await vidsrc_me(data.mediaId, controller.progress, data.season, data.episode);
         }
 
+        const __props = `{ t: ${data.mediaType}, i: ${data.mediaId}, s: ${data.season}, e: ${data.episode} }`;
+
         if (result) {
             controller.finish(result);
-            console.log(`=> ✅ Done client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
+            console.log(`=> ✅ Done client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}, data: ${__props}`);
         } else {
             controller.failed();
-            console.log(`=> ❌ Failed client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
+            console.log(`=> ❌ Failed client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}, data: ${__props}`);
         }
 
     },
