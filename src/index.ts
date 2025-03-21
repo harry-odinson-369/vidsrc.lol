@@ -1,6 +1,6 @@
 import MerlMovieSDK, { DirectLink } from "merlmovie-sdk";
 import vidsrc_vip from "./providers/vidsrc.vip";
-import filmxy_vip, { save_auth } from "./providers/filmxy.vip";
+import filmxy_vip from "./providers/filmxy.vip";
 import embed_su from "./providers/embed.su";
 import vidsrc_cc from "./providers/vidsrc.cc";
 import vidsrc_me from "./providers/vidsrc.me";
@@ -32,7 +32,7 @@ sdk.handle({
         const isLog = url.searchParams.get("log") === "true";
 
         if (provider === ProviderSite.Filmxy_Vip) {
-            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode, onAuthUpdate(generated) { save_auth(generated.auth, generated.filename); }, log: isLog });
+            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode, log: isLog });
         } else if (provider === ProviderSite.Vidsrc_Vip) {
             result = await vidsrc_vip(data.mediaId, controller.fetch, controller.progress, data.season, data.episode);
         } else if (provider === ProviderSite.Embed_Su) {

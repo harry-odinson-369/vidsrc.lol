@@ -333,11 +333,16 @@ export function list_auth_files(): Array<string> {
 }
 
 export function save_auth(auth: AuthenticationModel, filename?: string) {
-    const ls = list_auth_files();
+    return new Promise(resolve => {
+        const ls = list_auth_files();
 
-    let __filename: string = filename || (ls.length ? `${ls.length + 1}.json` : "1.json");
+        let __filename: string = filename || (ls.length ? `${ls.length + 1}.json` : "1.json");
 
-    fs.writeFile(path.join(__auth_dir, __filename), JSON.stringify(auth), (err) => console.error(err));
+        fs.writeFile(path.join(__auth_dir, __filename), JSON.stringify(auth), (err) => {
+            if (err) console.error(err);
+            resolve(undefined); 
+        });
+    });
 }
 
 function _get_auth(auth_dir: string): Promise<AuthenticationModel | undefined> {
@@ -380,12 +385,12 @@ export function unused_auth_filename() {
     return "10";
 }
 
-export async function generate_auth(progress: ProgressFunction, params?: { log?: boolean, onError?: (msg: any) => void }): Promise<{ auth: AuthenticationModel | undefined, filename: string }> {
+export async function generate_auth(progress: ProgressFunction, params?: { new_auth?: boolean, filename?: string, onError?: (msg: any) => void }): Promise<{ auth: AuthenticationModel | undefined, filename: string }> {
     const index = random(1, 10);
-    const _filename = `${index}.json`;
+    const _filename = params?.filename || `${index}.json`;
     const _dir = path.join(__auth_dir, _filename);
 
-    if (!fs.existsSync(_dir)) {
+    if (!fs.existsSync(_dir) || params?.new_auth === true) {
         progress(5);
         const context = await create_context();
         progress(10);
@@ -407,7 +412,6 @@ export async function generate_auth(progress: ProgressFunction, params?: { log?:
             auth: auth,
         }
     }
-
 }
 
 function __logData(name: string, data: string) {
@@ -455,7 +459,7 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
     const resp = await request.client.get(url);
 
     if (log === true) __logData("filmxy.html", resp.data);
-    
+
     const c_poster = get_c_poster(resp.data);
 
     const nonce = get_usernonce(resp.data);
@@ -474,7 +478,7 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
         if (formatted_links) {
             progress(100);
-            
+
             const formatted_subs = get_formatted_subs(resp0.data);
             return {
                 qualities: formatted_links,
@@ -490,7 +494,6 @@ export async function try_get_direct_links(params: {
     progress: ProgressFunction,
     season?: any,
     episode?: any,
-    onAuthUpdate?: (generated: { auth: AuthenticationModel, filename: string }) => void,
     onError?: (err: any) => void,
     log?: boolean,
 }): Promise<DirectLink | undefined> {
@@ -504,9 +507,16 @@ export async function try_get_direct_links(params: {
     const generated_auth = await generate_auth(params.progress);
 
     if (generated_auth.auth) {
-        if (params.onAuthUpdate) params.onAuthUpdate(generated_auth);
+        await save_auth(generated_auth.auth, generated_auth.filename);
         const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode, params.log);
-        return result;
+        if (!result) {
+            const new_auth = await generate_auth(params.progress, { new_auth: true, filename: generated_auth.filename });
+            if (new_auth.auth) {
+                await save_auth(new_auth.auth, new_auth.filename);
+                const new_result = await get_direct_links(new_auth.auth, params.id, params.progress, params.season, params.episode, params.log);
+                return new_result;
+            }
+        }
     }
 }
 
