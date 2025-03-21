@@ -29,10 +29,9 @@ sdk.handle({
         let result: DirectLink | undefined;
 
         const provider = url.searchParams.get("provider") ?? ProviderSite.Filmxy_Vip;
-        const isLog = url.searchParams.get("log") === "true";
 
         if (provider === ProviderSite.Filmxy_Vip) {
-            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode, log: isLog });
+            result = await filmxy_vip({ id: data.mediaId, progress: controller.progress, season: data.season, episode: data.episode });
         } else if (provider === ProviderSite.Vidsrc_Vip) {
             result = await vidsrc_vip(data.mediaId, controller.fetch, controller.progress, data.season, data.episode);
         } else if (provider === ProviderSite.Embed_Su) {

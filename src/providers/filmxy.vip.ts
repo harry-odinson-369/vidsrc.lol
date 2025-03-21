@@ -424,7 +424,7 @@ function __logData(name: string, data: string) {
     });
 }
 
-export async function get_direct_links(auth: AuthenticationModel, id: any, progress: ProgressFunction, season?: any, episode?: any, log?: boolean): Promise<DirectLink | undefined> {
+export async function get_direct_links(auth: AuthenticationModel, id: any, progress: ProgressFunction, season?: any, episode?: any): Promise<DirectLink | undefined> {
 
     let s = season;
     let e = episode;
@@ -458,8 +458,6 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
     const resp = await request.client.get(url);
 
-    if (log === true) __logData("filmxy.html", resp.data);
-
     const c_poster = get_c_poster(resp.data);
 
     const nonce = get_usernonce(resp.data);
@@ -472,11 +470,9 @@ export async function get_direct_links(auth: AuthenticationModel, id: any, progr
 
         const resp0 = await request.client.get(next_url);
 
-        if (log === true) __logData("filmxy.html", resp0.data);
-
         const formatted_links = get_formatted_links(resp0.data);
 
-        if (formatted_links) {
+        if (formatted_links.length) {
             progress(100);
 
             const formatted_subs = get_formatted_subs(resp0.data);
@@ -495,12 +491,11 @@ export async function try_get_direct_links(params: {
     season?: any,
     episode?: any,
     onError?: (err: any) => void,
-    log?: boolean,
 }): Promise<DirectLink | undefined> {
 
     if (params.auth) {
         params.progress(20);
-        const resp = await get_direct_links(params.auth, params.id, params.progress, params.season, params.episode, params.log);
+        const resp = await get_direct_links(params.auth, params.id, params.progress, params.season, params.episode);
         if (resp) return resp;
     }
 
@@ -508,15 +503,16 @@ export async function try_get_direct_links(params: {
 
     if (generated_auth.auth) {
         await save_auth(generated_auth.auth, generated_auth.filename);
-        const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode, params.log);
+        const result = await get_direct_links(generated_auth.auth, params.id, params.progress, params.season, params.episode);
         if (!result) {
             const new_auth = await generate_auth(params.progress, { new_auth: true, filename: generated_auth.filename });
             if (new_auth.auth) {
                 await save_auth(new_auth.auth, new_auth.filename);
-                const new_result = await get_direct_links(new_auth.auth, params.id, params.progress, params.season, params.episode, params.log);
+                const new_result = await get_direct_links(new_auth.auth, params.id, params.progress, params.season, params.episode);
                 return new_result;
             }
         }
+        return result;
     }
 }
 

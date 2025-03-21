@@ -15,33 +15,33 @@ async function save(filename: string, res: Response) {
 }
 
 (async () => {
-    const result = await sendTest("ws://localhost:8080?provider=filmxy.vip&log=true", {
+    const result = await sendTest("ws://localhost:8080?provider=filmxy.vip", {
         mediaId: "tt1190634",
         season: "1",
         episode: "1",
     });
-    if (result) {
-        // const resp = await fetch(result.qualities[0].link, { headers: result.qualities[0].headers });
-        // const text = await resp.text();
 
-        // const parsed = parseHLS(text);
+    console.log(result);
+    
+    // if (result) {
+    //     const resp = await fetch(result.qualities[0].link, { headers: result.qualities[0].headers });
+    //     const text = await resp.text();
 
-        // if (parsed.isMasterPlaylist) {
-        //     for (let variant of (parsed as MasterPlaylist).variants) {
-        //         const resp1 = await fetch(variant.uri, { headers: result.qualities[0].headers });
-        //         const text1 = await resp1.text();
-        //         const parsed1 = parseHLS(text1);
-        //         const list = parsed1 as MediaPlaylist;
-        //         let counter = 0;
-        //         for (let seg of list.segments) {
-        //             const resp2 = await fetch(seg.uri, { headers: result.qualities[0].headers });
-        //             await save(`${counter}.ts`, resp2);
-        //             counter++;
-        //         }
-        //     }
-        // }
+    //     const parsed = parseHLS(text);
 
-        console.log(result);
-        
-    }
+    //     if (parsed.isMasterPlaylist) {
+    //         for (let variant of (parsed as MasterPlaylist).variants) {
+    //             const resp1 = await fetch(variant.uri, { headers: result.qualities[0].headers });
+    //             const text1 = await resp1.text();
+    //             const parsed1 = parseHLS(text1);
+    //             const list = parsed1 as MediaPlaylist;
+    //             let counter = 0;
+    //             for (let seg of list.segments) {
+    //                 const resp2 = await fetch(seg.uri, { headers: result.qualities[0].headers });
+    //                 await save(`${counter}.ts`, resp2);
+    //                 counter++;
+    //             }
+    //         }
+    //     }
+    // }
 })();
