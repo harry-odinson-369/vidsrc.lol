@@ -14,6 +14,11 @@ function getFullUrl(path: string) {
     return new URL(`http://${HOST || `localhost:${PORT}`}${path}`);
 }
 
+function getActualIpv4(ip?: string) {
+    if (!ip) return "unknown"; 
+    return ip.split(":").join(".").split(".").filter(e => parseInt(e)).join(".");
+}
+
 const ProviderSite = {
     Filmxy_Vip: "filmxy.vip",  
     Vidsrc_Vip: "vidsrc.vip",
@@ -44,8 +49,10 @@ sdk.handle({
 
         if (result) {
             controller.finish(result);
+            console.log(`Successfully sent data to client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
         } else {
             controller.failed();
+            console.log(`Failed to send data to client: ${getActualIpv4(message.socket.remoteAddress)}, provider: ${provider}`);
         }
 
     },
@@ -53,7 +60,7 @@ sdk.handle({
         console.log("Socket listening on " + `${sdk.HOST || "localhost"}:${sdk.PORT}` + "...");
     },
     onConnection(ws, message) {
-        console.log(`A new client has connected! Ip Address => ${message.socket.remoteAddress}`);
+        console.log(`A new client has connected! Ipv4 => ${getActualIpv4(message.socket.remoteAddress)}`);
     },
     onClosed(code, reason) {
         console.log(`A client was disconnected with code => ${code}`);
