@@ -46,8 +46,7 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
                     qualities: [
                         {
                             name: "CloudStream",
-                            link: response.url(),
-                            headers: newHeaders,
+                            link: `https://vidsrc.club/m3u8?d=${encodeURIComponent(response.url())}&h=${encodeURIComponent(JSON.stringify(newHeaders))}`,
                         }
                     ],
                     subtitles: [],
