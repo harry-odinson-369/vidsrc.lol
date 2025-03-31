@@ -10,7 +10,7 @@ import opensubtitles_org from "./subtitles/opensubtitles.org";
 const PORT: number = (process.env.PORT || 8080) as number;
 const HOST: string | undefined = process.env.HOST;
 
-const sdk = new MerlMovieSDK({ HOST: "192.168.100.9", PORT: PORT });
+const sdk = new MerlMovieSDK({ HOST: HOST, PORT: PORT });
 
 function getFullUrl(path: string) {
     return new URL(`http://${HOST || `localhost:${PORT}`}${path}`);
