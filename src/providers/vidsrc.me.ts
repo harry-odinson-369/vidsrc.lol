@@ -1,5 +1,6 @@
-import { DirectLink, ProgressFunction } from "merlmovie-sdk";
-import { connect, ConnectResult } from "puppeteer-real-browser";
+import { DirectLink, FetchFunction, FetchFunctionParams, ProgressFunction } from "merlmovie-sdk";
+import { ConnectResult } from "puppeteer-real-browser";
+import RealBrowser from "../utils/browser";
 
 function BASE_URL(path?: string) {
     return `https://vidsrc.me/${path || ""}`;
@@ -17,13 +18,20 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
     return new Promise(async resolve => {
         const { browser, page } = context;
 
-        const agent = await browser.userAgent().catch(err => console.error(err));
-
         await page.goto(season && episode ? tv_url(id, season, episode) : movie_url(id)).catch(() => { });
 
         await page.waitForNetworkIdle({ timeout: 5000 }).catch((err) => console.log(err));
 
         let step = 1;
+
+        let newHeaders: Record<any, any>;
+
+        await page.setRequestInterception(true);
+
+        page.on("request", async req => {
+            newHeaders = req.headers();
+            req.continue();
+        });
 
         page.on("response", async (response) => {
             const headers = response.headers();
@@ -32,21 +40,12 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
 
                 step = 2;
 
-                const newHeaders = {
-                    "host": new URL(response.url()).host,
-                    "origin": "https://edgedeliverynetwork.com",
-                    "referer": "https://edgedeliverynetwork.com/"
-                };
-
-                if (typeof agent === "string") {
-                    newHeaders["user-agent"] = agent;
-                }
-
                 let result = {
                     qualities: [
                         {
                             name: "CloudStream",
-                            link: `https://vidsrc.club/m3u8?d=${encodeURIComponent(response.url())}&h=${encodeURIComponent(JSON.stringify(newHeaders))}`,
+                            link: response.url(),
+                            headers: newHeaders,
                         }
                     ],
                     subtitles: [],
@@ -56,16 +55,31 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
             }
         });
 
-        if (step === 1) {
-            const cor = await page.evaluate(() => {
-                return {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
+        while (step < 2) {
+
+            const pages = await browser.pages();
+
+            if (pages.length > 1) {
+                for (let i = 0; i < pages.length; i++) {
+                    if (i !== 0) {
+                        await pages[i].close();
+                    } 
                 }
-            }).catch(err => console.log(err));
-            
-            if (typeof cor === "object") {
-                await page.mouse.click(cor.width / 2, cor.height / 2).catch(err => console.error(err));
+            }
+
+            if (step === 1) {
+                const cor = await page.evaluate(() => {
+                    return {
+                        width: window.innerWidth,
+                        height: window.innerHeight,
+                    }
+                }).catch(err => console.log(err));
+
+                if (typeof cor === "object") {
+                    await page.mouse.click(cor.width / 2, cor.height / 2).catch(err => console.error(err));
+                }
+            } else {
+                break;
             }
         }
 
@@ -73,18 +87,15 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
     });
 }
 
-export async function get_direct_links(id: string, progress: ProgressFunction, season?: string, episode?: string): Promise<DirectLink | undefined> {
+async function get_direct_links(id: string, progress: ProgressFunction, season?: string, episode?: string): Promise<DirectLink | undefined> {
     progress(20);
-    const context = await connect({
-        headless: false,
-        turnstile: true,
-        connectOption: { defaultViewport: null },
-        disableXvfb: false,
-    });
+    const context = await RealBrowser();
     progress(30);
     const result = await __get_direct_links(context, id, progress, season, episode);
     await context.browser.close();
     return result;
 }
 
-export default get_direct_links;
+const vidsrc_me = get_direct_links;
+
+export default vidsrc_me;

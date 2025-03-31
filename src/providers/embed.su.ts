@@ -40,7 +40,7 @@ function __parseVConfig(html: string): VConfig | null {
 }
 
 
-export default async function get_direck_links(id: string, request: FetchFunction, progress: ProgressFunction, s?: string, e?: string): Promise<DirectLink | undefined> {
+export default async function embed_su(id: string, request: FetchFunction, progress: ProgressFunction, s?: string, e?: string): Promise<DirectLink | undefined> {
     const target = BASE_URL(`embed/${s && e ? "tv" : "movie"}/${id}${s && e ? `/${s}/${e}` : ""}`);
 
     let headers = {

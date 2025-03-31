@@ -156,7 +156,11 @@ export async function get_tv_direct_links(id: string, season: string, episode: s
     return undefined;
 }
 
-export default async function get_direct_links(id: string, request: FetchFunction, progress: ProgressFunction, s?: string, e?: string): Promise<DirectLink | undefined> {
+async function get_direct_links(id: string, request: FetchFunction, progress: ProgressFunction, s?: string, e?: string): Promise<DirectLink | undefined> {
     if (s && e) return await get_tv_direct_links(id, s, e, request, progress);
     return await get_movie_direct_links(id, request, progress);
 }
+
+const vidsrc_vip = get_direct_links;
+
+export default vidsrc_vip;

@@ -1,5 +1,6 @@
 import { DirectLink, ProgressFunction } from "merlmovie-sdk";
 import { connect, ConnectResult } from "puppeteer-real-browser";
+import { extractVariants } from "../utils/hls";
 
 function BASE_URL(path?: string) {
     return `https://vidsrc.cc/${path || ""}`;
@@ -36,15 +37,14 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
                 const source = await response.json();
                 if (source && source.data && source.data.source) {
 
-                    result.qualities.push({
-                        name: "VidPlay",
-                        link: source.data.source,
-                        headers: {
-                            host: new URL(source.data.source).host,
-                            referer: BASE_URL(),
-                            origin: BASE_URL().substring(0, BASE_URL().length - 1),
-                        }
-                    });
+                    const headers = {
+                        referer: BASE_URL(),
+                        origin: BASE_URL().substring(0, BASE_URL().length - 1),
+                        "user-Agent": await browser.userAgent(),
+                    };
+
+                    result.qualities = await extractVariants(source.data.source, headers);
+
                     if (source.data.subtitles && source.data.subtitles.length) {
                         result.subtitles = source.data.subtitles.map((e: any) => {
                             return {
@@ -54,7 +54,7 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
                         });
                     }
                 }
-                
+
                 progress(100);
 
                 resolve(result);
@@ -62,12 +62,12 @@ async function __get_direct_links(context: ConnectResult, id: string, progress: 
         });
 
         await page.goto(season && episode ? tv_url(id, season, episode) : movie_url(id)).catch(() => { });
-        
+
         progress(60);
     });
 }
 
-export async function get_direct_links(id: string, progress: ProgressFunction, season?: string, episode?: string): Promise<DirectLink | undefined> {
+async function get_direct_links(id: string, progress: ProgressFunction, season?: string, episode?: string): Promise<DirectLink | undefined> {
     progress(20);
     const context = await connect({
         headless: false,
@@ -81,4 +81,6 @@ export async function get_direct_links(id: string, progress: ProgressFunction, s
     return result;
 }
 
-export default get_direct_links;
+const vidsrc_cc = get_direct_links;
+
+export default vidsrc_cc;
