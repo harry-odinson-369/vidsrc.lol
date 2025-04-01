@@ -3,7 +3,7 @@ import RealBrowser from "../utils/browser";
 import { delay } from "../utils/timer";
 import fs from "fs";
 import path from "path";
-import { diceCoefficient, random, unused_auth_filename } from "../utils/helper";
+import { CookiesDir, diceCoefficient, random, unused_auth_filename } from "../utils/helper";
 import RequestClient from "../utils/axios";
 import { fetch_info, get_title, get_year } from "../utils/tmdb";
 
@@ -28,7 +28,7 @@ type SearchItem = {
     r: string
 };
 
-const DefaultAuthPath = path.join(process.cwd(), "__auth", "netfree");
+const DefaultAuthPath = path.join(CookiesDir, "netfree_cc");
 
 function __parse_headers(headers: HeadersModel) {
     return {

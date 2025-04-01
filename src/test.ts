@@ -6,7 +6,7 @@ function getActualIpv4(ip: string) {
 }
 
 (async () => {
-    const result = await sendTest("ws://192.168.100.9:8080?provider=vidsrc.cc", {
+    const result = await sendTest("ws://93.127.128.47:8080?provider=filmxy.vip", {
         mediaId: "693134",
     });
 

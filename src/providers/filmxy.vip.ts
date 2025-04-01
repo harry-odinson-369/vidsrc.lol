@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { ProgressFunction, DirectLink, LinkModel } from "merlmovie-sdk";
 import RealBrowser from "../utils/browser";
-import { random } from "../utils/helper";
+import { CookiesDir, random } from "../utils/helper";
 import RequestClient from "../utils/axios";
 import { fetch_info, get_imdb_id } from "../utils/tmdb";
 
@@ -33,7 +33,7 @@ export type ResolvedCaptchaResult = {
 }
 
 function BASE_URL(path?: string) {
-    return `https://www.filmxy.vip/${path}`;
+    return `https://www.filmxy.vip/${path || ""}`;
 }
 
 export function get_headers(credential: ResolvedCaptchaResult): Record<any, any> {
@@ -292,11 +292,11 @@ export async function login_as_guest(captcha: ResolvedCaptchaResult, error?: (ms
     return validate_auth_response(resp, auth, error);
 }
 
-export const __auth_dir = path.join(process.cwd(), "__auth");
+export const DefaultAuthDir = path.join(CookiesDir, "filmxy_vip");
 
 export function list_auth_files(): Array<string> {
-    if (!fs.existsSync(__auth_dir)) fs.mkdirSync(__auth_dir, { recursive: true });
-    const arr = fs.readdirSync(__auth_dir);
+    if (!fs.existsSync(DefaultAuthDir)) fs.mkdirSync(DefaultAuthDir, { recursive: true });
+    const arr = fs.readdirSync(DefaultAuthDir);
     return arr;
 }
 
@@ -310,7 +310,7 @@ export function save_auth(auth: AuthenticationModel, filename?: string) {
 
                 let __filename: string = filename || (ls.length ? `${ls.length + 1}.json` : "1.json");
 
-                fs.writeFile(path.join(__auth_dir, __filename), data, (err) => {
+                fs.writeFile(path.join(DefaultAuthDir, __filename), data, (err) => {
                     if (err) console.error(err);
                     resolve(undefined);
                 });
@@ -328,7 +328,7 @@ export function save_auth(auth: AuthenticationModel, filename?: string) {
 
 function _get_auth(auth_dir: string): Promise<AuthenticationModel | undefined> {
     return new Promise(resolve => {
-        fs.readFile(auth_dir.startsWith(__auth_dir) ? auth_dir : path.join(__auth_dir, auth_dir), "utf-8", (err, data) => {
+        fs.readFile(auth_dir.startsWith(DefaultAuthDir) ? auth_dir : path.join(DefaultAuthDir, auth_dir), "utf-8", (err, data) => {
             if (!err && data) {
                 resolve(JSON.parse(data));
             } else {
@@ -356,7 +356,7 @@ export async function get_auth(): Promise<AuthenticationModel | undefined> {
 export async function generate_auth(progress: ProgressFunction, params?: { new_auth?: boolean, filename?: string, onError?: (msg: any) => void }): Promise<{ auth: AuthenticationModel | undefined, filename: string }> {
     const index = random(1, 10);
     const _filename = params?.filename || `${index}.json`;
-    const _dir = path.join(__auth_dir, _filename);
+    const _dir = path.join(DefaultAuthDir, _filename);
 
     if (!fs.existsSync(_dir) || params?.new_auth === true) {
         progress(5);
@@ -467,27 +467,29 @@ export async function try_get_direct_links(params: {
         __id = get_imdb_id((await fetch_info(params.season & params.episode ? "tv" : "movie", __id)));
     }
 
+    let result: DirectLink | undefined;
+
     if (params.auth) {
         params.progress(20);
-        const resp = await get_direct_links(params.auth, __id, params.progress, params.season, params.episode);
-        if (resp) return resp;
+        result = await get_direct_links(params.auth, __id, params.progress, params.season, params.episode);
     }
 
-    const generated_auth = await generate_auth(params.progress);
+    if (!result) {
+        const generated_auth = await generate_auth(params.progress);
 
-    if (generated_auth.auth) {
-        await save_auth(generated_auth.auth, generated_auth.filename);
-        const result = await get_direct_links(generated_auth.auth, __id, params.progress, params.season, params.episode);
-        if (!result) {
-            const new_auth = await generate_auth(params.progress, { new_auth: true, filename: generated_auth.filename });
-            if (new_auth.auth) {
-                await save_auth(new_auth.auth, new_auth.filename);
-                const new_result = await get_direct_links(new_auth.auth, __id, params.progress, params.season, params.episode);
-                return new_result;
+        if (generated_auth.auth) {
+            result = await get_direct_links(generated_auth.auth, __id, params.progress, params.season, params.episode);
+
+            if (!result) {
+                const new_auth = await generate_auth(params.progress, { new_auth: true, filename: generated_auth.filename });
+                if (new_auth.auth) {
+                    result = await get_direct_links(new_auth.auth, __id, params.progress, params.season, params.episode);
+                }
             }
         }
-        return result;
     }
+
+    return result;
 }
 
 const filmxy_vip = try_get_direct_links;

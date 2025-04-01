@@ -5,6 +5,8 @@ export function random(min: number, max: number) {
   return Math.floor((Math.random()) * (max - min + 1)) + min;
 }
 
+export const CookiesDir = path.join(process.cwd(), "__cookies");
+
 export function unused_auth_filename(dir: string) {
   for (let i = 1; i < 10; i++) {
     const _filename = `${i}.json`;
