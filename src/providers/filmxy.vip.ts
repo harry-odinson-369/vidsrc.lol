@@ -361,17 +361,22 @@ export async function generate_auth(progress: ProgressFunction, params?: { new_a
     if (!fs.existsSync(_dir) || params?.new_auth === true) {
         progress(5);
         const context = await RealBrowser();
-        progress(10);
-        const captcha = await resolve_captcha(context, BASE_URL(""));
-        progress(15);
-        await context.browser.close();
-        const auth = await login_as_guest(captcha, params?.onError);
-        progress(20);
-        save_auth(auth, _filename);
-        return {
-            filename: _filename,
-            auth: auth,
-        };
+        try {
+            progress(10);
+            const captcha = await resolve_captcha(context, BASE_URL(""));
+            progress(15);
+            const auth = await login_as_guest(captcha, params?.onError);
+            progress(20);
+            save_auth(auth, _filename);
+            return {
+                filename: _filename,
+                auth: auth,
+            };
+        } catch (err) {
+            console.error(err);
+        } finally {
+            await context.browser.close();
+        }
     } else {
         const auth = await _get_auth(_filename);
         progress(20);
